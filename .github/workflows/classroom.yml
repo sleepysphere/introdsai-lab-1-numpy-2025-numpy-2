@@ -1,0 +1,78 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up comment bot
+        uses: iterative/setup-cml@v2
+        with:
+          version: 'v0.20.0'
+          vega: false
+      
+      - name: Get pip cache dir
+        id: pip-cache-dir
+        shell: bash
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+
+      - name: pip cache
+        id: pip-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pip-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Jupyter
+        run: |
+          pip install --cache-dir ${{ steps.pip-cache-dir.outputs.dir }} jupyter
+
+      - name: Export Python file
+        run: |
+          jupyter nbconvert --to python exercises.ipynb
+          
+      - name: Checkout tests
+        run: git clone https://github.com/nhientruong04/test_action.git answer
+
+      - name: Permission grant
+        run: sudo -H chown -R $(whoami) $HOME/.cache/pip
+
+      - name: Autograding
+        env:
+          PIP_CACHE_DIR: ${{ steps.pip-cache-dir.outputs.dir }}
+        id: numpy
+        uses: FAU-CS6-KDDmUe-Submissions/Custom-Python-Autograder@v1
+        with:
+          setup-command: 'pip install --cache-dir $PIP_CACHE_DIR -r requirements.txt'
+          max-score: 100
+          test-path: 'answer/test_numpy.py'
+      - name: Autograding Reporter
+        uses: fuisl/autograding-grading-reporter@v1
+        env:
+          NUMPY_RESULTS: "${{steps.numpy.outputs.result}}"
+        with:
+          runners: numpy
+    
+      - name: Comment bot
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f comment.md ]; then
+            cml comment create comment.md
+          else
+            echo "comment.md not found!"
+          fi
