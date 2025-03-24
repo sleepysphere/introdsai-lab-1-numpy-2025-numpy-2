@@ -231,7 +231,7 @@ class Exercise11(EqualityCheckProblem):
     _solution = None
     _var = "q11_sol"
     _expected = q11_sol
-    _hint = "Compute differences with np.diff(), then calculate Euclidean distances and append a NaN."
+    _hint = "Compute differences with np.diff(), then calculate Euclidean distances and pad with 0 for missing data."
 
 
 class Exercise12(EqualityCheckProblem):
