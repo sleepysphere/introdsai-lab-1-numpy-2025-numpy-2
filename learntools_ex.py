@@ -57,7 +57,7 @@ q10_sol = np.array([[34, 37, 33], [82, 37, 32], [59, 37, 10]])
 input_q11 = np.array([[1, 2], [4, 6], [7, 8], [10, 10]])
 diffs = np.diff(input_q11, axis=0)
 distance = np.sqrt(np.sum(diffs**2, axis=1))
-distance = np.append(distance, np.nan)  # Pad last row with NaN
+distance = np.append(distance, np.nan)  # Pad last row with 0
 q11_sol = np.array([[ 1.,  2.,  5.], [ 4.,  6.,  3.60555128], [ 7.,  8.,  3.60555128], [10., 10., 0]])
 
 # Q12: Remove consecutive duplicate rows from an array.
@@ -231,7 +231,7 @@ class Exercise11(EqualityCheckProblem):
     _solution = None
     _var = "q11_sol"
     _expected = q11_sol
-    _hint = "Compute differences with np.diff(), then calculate Euclidean distances and pad with 0 for missing data."
+    _hint = "Compute differences with np.diff(), then calculate Euclidean distances and append 0."
 
 
 class Exercise12(EqualityCheckProblem):
